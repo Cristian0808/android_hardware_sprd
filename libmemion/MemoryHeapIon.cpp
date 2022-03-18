@@ -145,12 +145,6 @@ MemoryHeapIon::~MemoryHeapIon()
         close(mIonDeviceFd);
     }
 
-    int fd = android_atomic_or(-1, &mFD);
-    if (fd >= 0) {
-        mSize = 0;
-        mBase = NULL;
-        close(fd);
-    }
 }
 
 int MemoryHeapIon::getHeapID() const {

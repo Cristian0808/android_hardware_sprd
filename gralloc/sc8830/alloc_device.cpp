@@ -126,24 +126,15 @@ static int gralloc_alloc_buffer(alloc_device_t *dev, size_t size, int usage, buf
 			ion_flag = ION_FLAG_CACHED | ION_FLAG_CACHED_NEEDS_SYNC;
 		}
 
-		ret = ion_alloc(m->ion_client, size, 0, ion_heap_mask, ion_flag, &ion_hnd);
-
 		if (ret != 0)
 		{
 			AERR("Failed to ion_alloc from ion_client:%d", m->ion_client);
 			return -1;
 		}
 
-		ret = ion_share(m->ion_client, ion_hnd, &shared_fd);
-
 		if (ret != 0)
 		{
 			AERR("ion_share( %d ) failed", m->ion_client);
-
-			if (0 != ion_free(m->ion_client, ion_hnd))
-			{
-				AERR("ion_free( %d ) failed", m->ion_client);
-			}
 
 			return -1;
 		}
@@ -153,11 +144,6 @@ static int gralloc_alloc_buffer(alloc_device_t *dev, size_t size, int usage, buf
 		if (MAP_FAILED == cpu_ptr)
 		{
 			AERR("ion_map( %d ) failed", m->ion_client);
-
-			if (0 != ion_free(m->ion_client, ion_hnd))
-			{
-				AERR("ion_free( %d ) failed", m->ion_client);
-			}
 
 			close(shared_fd);
 			return -1;
@@ -190,8 +176,6 @@ static int gralloc_alloc_buffer(alloc_device_t *dev, size_t size, int usage, buf
 		{
 			AERR("munmap failed for base:%p size: %d", cpu_ptr, size);
 		}
-
-		ret = ion_free(m->ion_client, ion_hnd);
 
 		if (0 != ret)
 		{
@@ -596,11 +580,6 @@ static int alloc_device_free(alloc_device_t *dev, buffer_handle_t handle)
 		}
 
 		close(hnd->share_fd);
-
-		if (0 != ion_free(m->ion_client, hnd->ion_hnd))
-		{
-			AERR("Failed to ion_free( ion_client: %d ion_hnd:%p )", m->ion_client, hnd->ion_hnd);
-		}
 
 		memset((void *)hnd, 0, sizeof(*hnd));
 #else
